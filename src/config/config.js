@@ -42,7 +42,7 @@ class Config {
       .object({
         NODE_ENV: joi
           .string()
-          .valid("development", "production")
+          .valid("development", "production", "test")
           .default("development"),
         PORT: joi.number().default(3000),
 
@@ -51,7 +51,7 @@ class Config {
         DB_USER: joi.string().required(),
         DB_PASSWORD: joi.string().allow("").default(null),
         DB_NAME: joi.string().required(),
-        DB_SYNC: joi.string().allow("alter", "force", "none").default("none"),
+        DB_SYNC: joi.string().trim().allow("alter", "force", "none").default("none"),
         JWT_SECRET: joi.string().required(),
         JWT_EXPIRES_IN: joi.string().required(),
       })

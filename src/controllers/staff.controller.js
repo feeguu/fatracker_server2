@@ -64,7 +64,7 @@ class StaffController {
 
   async getStaffById(req, res) {
     const { id } = req.params;
-    const staff = await this.staffService.getStaffById(id);
+    const staff = await this.staffService.findById(id);
     res.status.json(staff);
   }
 
@@ -86,6 +86,13 @@ class StaffController {
   }
   async updateStaff(req, res) {
     const id = req.params.id;
+    if (
+      !id ||
+      (Number(id) !== res.locals.user.id &&
+        !res.locals.user.roles.includes("ADMIN"))
+    ) {
+      throw new HttpError(403, "Forbidden");
+    }
 
     const schema = joi.object({
       name: joi.string().optional(),

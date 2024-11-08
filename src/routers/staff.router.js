@@ -5,6 +5,7 @@ const { StaffService } = require("../services/staff.service");
 
 const { withAuth, byRoles } = require("../middleware/with-auth");
 const { withErrorHandler } = require("../middleware/with-error-handler");
+const { withRole } = require("../middleware/with-role");
 
 const staffService = new StaffService();
 const staffController = new StaffController(staffService);
@@ -12,7 +13,8 @@ const staffController = new StaffController(staffService);
 router.get(
   "/",
   ...withErrorHandler(
-    withAuth(byRoles(["ADMIN", "COORDINATOR", "PRINCIPAL"])),
+    withAuth(),
+    withRole(["ADMIN", "COORDINATOR", "PRINCIPAL"]),
     staffController.getStaffs.bind(staffController)
   )
 );
@@ -20,7 +22,8 @@ router.get(
 router.get(
   "/:id",
   ...withErrorHandler(
-    withAuth(byRoles(["ADMIN", "COORDINATOR", "PRINCIPAL"])),
+    withAuth(),
+    withRole(["ADMIN", "COORDINATOR", "PRINCIPAL"]),
     staffController.getStaffById.bind(staffController)
   )
 );
@@ -28,7 +31,8 @@ router.get(
 router.post(
   "/",
   ...withErrorHandler(
-    withAuth(byRoles(["ADMIN"])),
+    withAuth(),
+    withRole(["ADMIN", "COORDINATOR", "PRINCIPAL"]),
     staffController.createStaff.bind(staffController)
   )
 );
@@ -36,7 +40,8 @@ router.post(
 router.post(
   "/:id/roles",
   ...withErrorHandler(
-    withAuth(byRoles(["ADMIN", "PRINCIPAL", "COORDINATOR"])),
+    withAuth(),
+    withRole(["ADMIN", "COORDINATOR", "PRINCIPAL"]),
     staffController.addRole.bind(staffController)
   )
 );
@@ -44,10 +49,7 @@ router.post(
 router.patch(
   "/:id",
   ...withErrorHandler(
-    withAuth(
-      (req, user) =>
-        user.id === Number(req.params.id) || user.roles.includes("ADMIN")
-    ),
+    withAuth(),
     staffController.updateStaff.bind(staffController)
   )
 );
@@ -55,7 +57,8 @@ router.patch(
 router.delete(
   "/:id",
   ...withErrorHandler(
-    withAuth(byRoles(["ADMIN"])),
+    withAuth(),
+    withRole(["ADMIN", "COORDINATOR", "PRINCIPAL"]),
     staffController.deleteStaff.bind(staffController)
   )
 );

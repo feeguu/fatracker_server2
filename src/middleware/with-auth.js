@@ -16,7 +16,7 @@ const { StaffService } = require("../services/staff.service");
 
     @param {Function} rule - Função que verifica se o usuário tem permissão, recebe o request e o usuário autenticado
 */
-function withAuth(rule = () => true) {
+function withAuth() {
   return async (req, res, next) => {
     const staffService = new StaffService();
     const authService = new AuthService(staffService);
@@ -41,10 +41,6 @@ function withAuth(rule = () => true) {
         throw new HttpError(401, "Unauthorized");
       }
 
-      if (!rule(req, user)) {
-        throw new HttpError(403, "Forbidden");
-      }
-
       res.locals.user = user;
 
       next();
@@ -58,10 +54,4 @@ function withAuth(rule = () => true) {
   };
 }
 
-function byRoles(roles) {
-  return (_, user) => {
-    return user.roles.some((r) => roles.includes(r));
-  };
-}
-
-module.exports = { withAuth, byRoles };
+module.exports = { withAuth };

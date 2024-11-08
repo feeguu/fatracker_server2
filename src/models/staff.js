@@ -19,7 +19,6 @@ Staff.init(
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
     },
     password: {
       type: DataTypes.STRING,
@@ -34,6 +33,7 @@ Staff.init(
   },
   {
     sequelize,
+    paranoid: true,
     defaultScope: {
       include: [
         {
