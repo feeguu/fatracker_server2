@@ -13,14 +13,14 @@ class AuthController {
           email: joi.string().required(),
           password: joi.string().required(),
         },
-        { abortEarly: false }
+        { abortEarly: false, allowUnknown: true }
       )
       .unknown(true);
 
     const {
       error,
       value: { email, password },
-    } = schema.validate(req.body, { abortEarly: false });
+    } = schema.validate(req.body, { abortEarly: false, allowUnknown: true });
 
     if (error) {
       throw new HttpError(400, "Invalid email or password");

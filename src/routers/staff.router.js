@@ -3,9 +3,9 @@ const router = require("express").Router();
 const { StaffController } = require("../controllers/staff.controller");
 const { StaffService } = require("../services/staff.service");
 
-const { withAuth, byRoles } = require("../middleware/with-auth");
-const { withErrorHandler } = require("../middleware/with-error-handler");
-const { withRole } = require("../middleware/with-role");
+const { withAuth, byRoles } = require("../middlewares/with-auth");
+const { withErrorHandler } = require("../middlewares/with-error-handler");
+const { withRole } = require("../middlewares/with-role");
 
 const staffService = new StaffService();
 const staffController = new StaffController(staffService);

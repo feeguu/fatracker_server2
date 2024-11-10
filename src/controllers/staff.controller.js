@@ -41,6 +41,7 @@ class StaffController {
       value: { roles, excludeRoles },
     } = schema.validate(req.query, {
       abortEarly: false,
+      allowUnknown: true,
     });
     if (error) {
       throw new HttpError(400, error.details.map((d) => d.message).join(", "));
@@ -65,7 +66,7 @@ class StaffController {
   async getStaffById(req, res) {
     const { id } = req.params;
     const staff = await this.staffService.findById(id);
-    res.status.json(staff);
+    res.status(200).json(staff);
   }
 
   async createStaff(req, res) {
@@ -75,7 +76,10 @@ class StaffController {
       roles: joi.array().items(joi.string()).default([]),
     });
 
-    const { error, value } = schema.validate(req.body, { abortEarly: false });
+    const { error, value } = schema.validate(req.body, {
+      abortEarly: false,
+      allowUnknown: true,
+    });
 
     if (error) {
       throw new HttpError(400, error.details.map((d) => d.message).join(", "));
@@ -99,7 +103,10 @@ class StaffController {
       email: joi.string().email().optional(),
     });
 
-    const { error, value } = schema.validate(req.body, { abortEarly: false });
+    const { error, value } = schema.validate(req.body, {
+      abortEarly: false,
+      allowUnknown: true,
+    });
 
     if (error) {
       throw new HttpError(400, error.details.map((d) => d.message).join(", "));
@@ -119,7 +126,7 @@ class StaffController {
     const {
       error,
       value: { role },
-    } = schema.validate(req.body, { abortEarly: false });
+    } = schema.validate(req.body, { abortEarly: false, allowUnknown: true });
 
     if (error) {
       throw new HttpError(400, error.details.map((d) => d.message).join(", "));

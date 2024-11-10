@@ -2,6 +2,8 @@ const { sequelize } = require("../config/sequelize");
 const { Role } = require("./role");
 const { Staff } = require("./staff");
 const { StaffRole } = require("./staff-role");
+const { Course } = require("./course");
+
 const Config = require("../config/config");
 
 const config = Config.getInstance();

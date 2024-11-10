@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const AuthController = require("../controllers/auth.controller");
-const { withAuth } = require("../middleware/with-auth");
-const { withErrorHandler } = require("../middleware/with-error-handler");
+const { withAuth } = require("../middlewares/with-auth");
+const { withErrorHandler } = require("../middlewares/with-error-handler");
 const { AuthService } = require("../services/auth.service");
 const { StaffService } = require("../services/staff.service");
 
