@@ -1,4 +1,5 @@
 const HttpError = require("../errors/HttpError");
+const { Coordination } = require("../models/coordination");
 const { Course } = require("../models/course");
 
 class CourseService {
@@ -73,6 +74,58 @@ class CourseService {
     }
 
     await course.destroy();
+  }
+
+  async putStaff(courseId, staffId) {
+    const course = await Course.findByPk(courseId);
+    if (!course) {
+      throw new HttpError(404, "Course not found");
+    }
+
+    let staff = await this.staffService.findById(staffId);
+    if (!staff) {
+      throw new HttpError(404, "Staff not found");
+    }
+
+    if (!staff.roles.includes("COORDINATOR")) {
+      staff = await this.staffService.addRole(staffId, "COORDINATOR");
+    }
+
+    const previousCoordination = await course.getCoordination();
+    if (previousCoordination) {
+      console.log(previousCoordination);
+      await previousCoordination.destroy();
+    }
+
+    await staff.reload();
+
+    const staffRole = staff.staffRoles.find(
+      (sr) => sr.role.name === "COORDINATOR"
+    );
+
+    const coordination = await Coordination.create({
+      courseId,
+      staffRoleId: staffRole.id,
+    });
+
+    await course.setCoordination(coordination);
+
+    await course.reload();
+    return course;
+  }
+
+  async removeStaff(courseId) {
+    const course = await Course.findByPk(courseId);
+    if (!course) {
+      throw new HttpError(404, "Course not found");
+    }
+
+    const coordination = await course.getCoordination();
+    if (!coordination) {
+      throw new HttpError(404, "Coordination not found");
+    }
+
+    await coordination.destroy();
   }
 }
 

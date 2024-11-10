@@ -62,17 +62,19 @@ router.delete(
 // Apenas ADMIN
 router.put(
   "/:id/coordinator",
-  ...withErrorHandler(withAuth(), async (req, res) => {
-    res.send("PUT /courses/:id/coordinator");
-  })
+  ...withErrorHandler(
+    withAuth(),
+    courseController.putCourseStaff.bind(courseController)
+  )
 );
 
 // Apenas ADMIN
 router.delete(
   "/:id/coordinator",
-  ...withErrorHandler(withAuth(), async (req, res) => {
-    res.send("DELETE /courses/:id/coordinator");
-  })
+  ...withErrorHandler(
+    withAuth(),
+    courseController.deleteCourseStaff.bind(courseController)
+  )
 );
 
 module.exports = router;

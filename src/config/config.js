@@ -21,10 +21,15 @@ class Config {
       user: "",
       password: "",
       sync: "",
+      seed: false,
     };
     this.jwt = {
       secret: "",
       expiresIn: "",
+    };
+    this.admin = {
+      email: "",
+      password: "",
     };
   }
 
@@ -51,9 +56,24 @@ class Config {
         DB_USER: joi.string().required(),
         DB_PASSWORD: joi.string().allow("").default(null),
         DB_NAME: joi.string().required(),
-        DB_SYNC: joi.string().trim().allow("alter", "force", "none").default("none"),
+        DB_SYNC: joi
+          .string()
+          .trim()
+          .allow("alter", "force", "none")
+          .default("none"),
+        DB_SEED: joi.boolean().default(false),
         JWT_SECRET: joi.string().required(),
         JWT_EXPIRES_IN: joi.string().required(),
+        ADMIN_EMAIL: joi.string().when("DB_SEED", {
+          is: true,
+          then: joi.required(),
+          otherwise: joi.optional(),
+        }),
+        ADMIN_PASSWORD: joi.string().when("DB_SEED", {
+          is: true,
+          then: joi.required(),
+          otherwise: joi.optional(),
+        }),
       })
       .unknown(true);
 
@@ -80,12 +100,16 @@ class Config {
       password: envVars.DB_PASSWORD,
       name: envVars.DB_NAME,
       sync: envVars.DB_SYNC,
+      seed: envVars.DB_SEED,
     };
     config.jwt = {
       secret: envVars.JWT_SECRET,
       expiresIn: envVars.JWT_EXPIRES_IN,
     };
-
+    config.admin = {
+      email: envVars.ADMIN_EMAIL,
+      password: envVars.ADMIN_PASSWORD,
+    };
     Config.#instance = config;
     // console.log("Config instance created\n", JSON.stringify(config, null, 2));
     return Config.#instance;

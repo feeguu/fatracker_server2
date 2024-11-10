@@ -3,6 +3,7 @@ const HttpError = require("../errors/HttpError");
 const jose = require("jose");
 const { AuthService } = require("../services/auth.service");
 const { StaffService } = require("../services/staff.service");
+const { JOSEError } = require("jose/errors");
 
 /**
  *
@@ -45,11 +46,11 @@ function withAuth() {
 
       next();
     } catch (error) {
-      if (error instanceof HttpError) {
-        throw error;
+      if (error instanceof JOSEError) {
+        throw new HttpError(401, "Unauthorized");
       }
-      console.log(error);
-      throw new HttpError(401, "Unauthorized");
+
+      throw error;
     }
   };
 }

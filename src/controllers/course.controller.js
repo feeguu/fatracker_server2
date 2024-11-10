@@ -1,4 +1,5 @@
 const joi = require("joi");
+const HttpError = require("../errors/HttpError");
 
 class CourseController {
   /**
@@ -67,6 +68,32 @@ class CourseController {
   async deleteCourse(req, res) {
     const { id } = req.params;
     await this.courseService.delete(id);
+    res.status(204).end();
+  }
+
+  async putCourseStaff(req, res) {
+    const { id } = req.params;
+
+    const schema = joi.object({
+      staffId: joi.number().required(),
+    });
+
+    const { error, value } = schema.validate(req.body, {
+      abortEarly: false,
+      allowUnknown: true,
+    });
+
+    if (error) {
+      throw new HttpError(400, error.details.map((e) => e.message).join(", "));
+    }
+
+    const course = await this.courseService.putStaff(id, value.staffId);
+    res.status(200).json(course);
+  }
+
+  async deleteCourseStaff(req, res) {
+    const { id } = req.params;
+    await this.courseService.removeStaff(id);
     res.status(204).end();
   }
 }

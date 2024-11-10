@@ -138,12 +138,22 @@ class StaffService {
       throw new HttpError(404, "Role not found");
     }
 
-    const staffRole = await StaffRole.create({
-      staffId,
-      roleId: role.id,
+    const conflict = await StaffRole.findOne({
+      where: {
+        staffId,
+        roleId: role.id,
+      },
     });
 
-    await staff.reload();
+    if (!conflict) {
+      const staffRole = await StaffRole.create({
+        staffId,
+        roleId: role.id,
+      });
+
+      await staff.reload();
+    }
+
     return staff;
   }
 
