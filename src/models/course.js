@@ -30,6 +30,7 @@ Course.init(
     sequelize: sequelize,
     paranoid: true,
     defaultScope: {
+      order: [["id", "ASC"]],
       include: [
         {
           model: Coordination,

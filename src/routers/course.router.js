@@ -29,7 +29,6 @@ router.get(
   )
 );
 
-// Apenas ADMIN
 router.post(
   "/",
   ...withErrorHandler(
@@ -39,7 +38,6 @@ router.post(
   )
 );
 
-// Apenas ADMIN
 router.patch(
   "/:id",
   ...withErrorHandler(
@@ -49,7 +47,6 @@ router.patch(
   )
 );
 
-// Apenas ADMIN
 router.delete(
   "/:id",
   ...withErrorHandler(
@@ -59,20 +56,20 @@ router.delete(
   )
 );
 
-// Apenas ADMIN
 router.put(
   "/:id/coordinator",
   ...withErrorHandler(
     withAuth(),
+    withRole(["ADMIN"]),
     courseController.putCourseStaff.bind(courseController)
   )
 );
 
-// Apenas ADMIN
 router.delete(
   "/:id/coordinator",
   ...withErrorHandler(
     withAuth(),
+    withRole(["ADMIN"]),
     courseController.deleteCourseStaff.bind(courseController)
   )
 );

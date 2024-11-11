@@ -7,6 +7,7 @@ const HttpError = require("./errors/HttpError");
 const authRouter = require("./routers/auth.router");
 const staffRouter = require("./routers/staff.router");
 const courseRouter = require("./routers/course.router");
+const sectionRouter = require("./routers/section.router");
 
 const config = Config.getInstance();
 
@@ -21,6 +22,7 @@ app.use(cors());
 app.use("/auth", authRouter);
 app.use("/staffs", staffRouter);
 app.use("/courses", courseRouter);
+app.use("/sections", sectionRouter);
 
 app.use((err, req, res, next) => {
   if (err instanceof HttpError) {

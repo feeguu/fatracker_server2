@@ -12,7 +12,24 @@ class CourseController {
 
   async getCourses(req, res) {
     const user = res.locals.user;
-    const courses = await this.courseService.getByUser(user);
+
+    const querySchema = joi.object({
+      offset: joi.number().integer().min(0).default(0),
+      limit: joi.number().integer().min(1),
+
+      code: joi.string().trim(),
+    });
+
+    const { value, error } = querySchema.validate(req.query, {
+      abortEarly: false,
+      allowUnknown: true,
+    });
+
+    if (error) {
+      throw new HttpError(400, error.details.map((e) => e.message).join(", "));
+    }
+
+    const courses = await this.courseService.getByUser(user, value);
     res.status(200).json(courses);
   }
 

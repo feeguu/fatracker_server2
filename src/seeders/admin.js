@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const Config = require("../config/config");
 const { Role } = require("../models/role");
 const { StaffRole } = require("../models/staff-role");
+
 async function seedAdmin() {
   const config = Config.getInstance();
 
@@ -20,6 +21,10 @@ async function seedAdmin() {
       staffId: staff.id,
       roleId: role.id,
     });
+  }
+
+  if (created) {
+    console.log(`[SEED] Admin created with email: ${email}`);
   }
 }
 

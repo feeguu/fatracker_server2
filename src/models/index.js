@@ -4,12 +4,14 @@ const { Staff } = require("./staff");
 const { StaffRole } = require("./staff-role");
 const { Course } = require("./course");
 const { Coordination } = require("./coordination");
-
-const { seed } = require("../seeders");
+const { Section } = require("./section");
 
 const Config = require("../config/config");
+const { seed } = require("../seeders");
 
 const config = Config.getInstance();
+
+// Roles asscociations
 
 StaffRole.belongsTo(Staff, { foreignKey: "staffId", as: "staff" });
 StaffRole.belongsTo(Role, { foreignKey: "roleId", as: "role" });
@@ -24,6 +26,8 @@ Role.hasMany(StaffRole, {
   as: "staffRoles",
   onDelete: "CASCADE",
 });
+
+// Coordination associations
 
 Coordination.belongsTo(StaffRole, {
   foreignKey: "staffRoleId",
@@ -41,10 +45,23 @@ Course.belongsTo(Coordination, {
   as: "coordination",
 });
 
-Coordination.hasMany(Course, {
+Coordination.hasOne(Course, {
   foreignKey: "coordinationId",
-  as: "courses",
+  as: "course",
   onDelete: "SET NULL",
+});
+
+// Section-Course associations
+
+Section.belongsTo(Course, {
+  foreignKey: "courseId",
+  as: "course",
+});
+
+Course.hasMany(Section, {
+  foreignKey: "courseId",
+  as: "sections",
+  onDelete: "CASCADE",
 });
 
 async function init() {

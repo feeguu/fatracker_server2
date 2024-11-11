@@ -10,6 +10,7 @@ const sequelize = new Sequelize({
   username: config.db.user,
   password: config.db.password,
   port: config.db.port,
+  logging: false,
 });
 
 module.exports = { sequelize };

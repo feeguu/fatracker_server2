@@ -8,11 +8,6 @@ Coordination.init(
   {
     sequelize,
     paranoid: true,
-    scopes: {
-      withCourse: {
-        include: ["course"],
-      },
-    },
   }
 );
 

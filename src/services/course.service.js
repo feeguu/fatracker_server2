@@ -1,6 +1,8 @@
+const { Op } = require("sequelize");
 const HttpError = require("../errors/HttpError");
 const { Coordination } = require("../models/coordination");
 const { Course } = require("../models/course");
+const { Section } = require("../models/section");
 
 class CourseService {
   /**
@@ -11,13 +13,66 @@ class CourseService {
     this.staffService = staffService;
   }
 
+  async getCoordinatorCourses(staff) {
+    if (!staff.roles.includes("COORDINATOR")) {
+      return [];
+    }
+
+    const staffRole = staff.staffRoles.find(
+      (sr) => sr.role.name === "COORDINATOR"
+    );
+
+    if (!staffRole) {
+      return [];
+    }
+
+    const coordinations = await Coordination.findAll({
+      where: {
+        staffRoleId: staffRole.id,
+      },
+      include: ["course"],
+    });
+
+    const courses = coordinations.map((coordination) => coordination.course);
+    return courses;
+  }
+
+  async getProfessorCourses(staff) {
+    if (!staff.roles.includes("PROFESSOR")) {
+      return [];
+    }
+
+    const staffRole = staff.staffRoles.find(
+      (sr) => sr.role.name === "PROFESSOR"
+    );
+
+    if (!staffRole) {
+      return [];
+    }
+
+    // TODO: Implementar a busca de cursos por professor
+    return [];
+  }
   /**
    *
    * @param {import("../models/staff").Staff} user
    */
-  async getByUser(user) {
-    // TODO: Get courses by user, atm this gets all courses
-    const courses = Course.findAll();
+  async getByUser(user, { offset, limit, code }) {
+    if (user.roles.includes("ADMIN") || user.roles.includes("PRINCIPAL")) {
+      const where = {};
+      if (code) {
+        where.code = {
+          [Op.like]: `${code}%`,
+        };
+      }
+      const courses = await Course.findAll({ limit, offset, where });
+      return courses;
+    }
+    const courses = [];
+
+    courses.push(...(await this.getCoordinatorCourses(user)));
+    courses.push(...(await this.getProfessorCourses(user)));
+
     return courses;
   }
 
@@ -26,6 +81,11 @@ class CourseService {
     if (!course) {
       throw new HttpError(404, "Course not found");
     }
+    return course;
+  }
+
+  async getByCode(code) {
+    const course = await Course.findOne({ where: { code } });
     return course;
   }
 
