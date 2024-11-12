@@ -80,14 +80,13 @@ class SectionController {
       );
     }
 
-    const section = await this.sectionService.createSection(value);
+    const section = await this.sectionService.create(value);
 
     return res.status(201).json(section);
   }
 
   async updateSection(req, res) {
     const bodySchema = joi.object({
-      courseId: joi.number().integer(),
       period: joi.string().valid("MORNING", "AFTERNOON", "NIGHT"),
       year: joi.number().integer().min(1),
       semester: joi.number().integer().min(1),
@@ -111,12 +110,15 @@ class SectionController {
       );
     }
 
-    const section = await this.sectionService.updateSection(
-      req.params.id,
-      value
-    );
+    const section = await this.sectionService.update(req.params.id, value);
 
     return res.status(200).json(section);
+  }
+
+  async deleteSection(req, res) {
+    await this.sectionService.delete(req.params.id);
+
+    return res.status(204).end();
   }
 }
 

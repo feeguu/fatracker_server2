@@ -3,6 +3,7 @@ const { sequelize } = require("../config/sequelize");
 const { Coordination } = require("./coordination");
 const { StaffRole } = require("./staff-role");
 const { Staff } = require("./staff");
+const { Section } = require("./section");
 
 class Course extends Model {}
 
@@ -47,6 +48,10 @@ Course.init(
               ],
             },
           ],
+        },
+        {
+          model: Section,
+          as: "sections",
         },
       ],
     },

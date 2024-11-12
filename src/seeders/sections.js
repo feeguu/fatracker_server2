@@ -97,24 +97,26 @@ async function seedSections() {
       );
     }
 
-    const code = `${course.code}_${section.semester}-${section.period}-${section.yearSemester}/${section.year}`;
-
     const [createdSection, created] = await Section.findOrCreate({
-      where: { code },
+      where: {
+        courseId: section.courseId,
+        year: section.year,
+        semester: section.semester,
+        yearSemester: section.yearSemester,
+      },
       defaults: {
         period: section.period,
         courseId: section.courseId,
         year: section.year,
         yearSemester: section.yearSemester,
         semester: section.semester,
-        code,
       },
     });
 
     if (!created) {
-      console.error(`[SEED] Section ${code} already exists`);
+      console.error(`[SEED] Section ${section} already exists`);
     } else {
-      console.log(`[SEED] Section ${code} created`);
+      console.log(`[SEED] Section created`);
     }
   }
 }

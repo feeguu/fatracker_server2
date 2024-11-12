@@ -33,4 +33,22 @@ router.post(
   )
 );
 
+router.patch(
+  "/:id",
+  ...withErrorHandler(
+    withAuth(),
+    withRole(["ADMIN", "COORDINATOR"]),
+    sectionController.updateSection.bind(sectionController)
+  )
+);
+
+router.delete(
+  "/:id",
+  ...withErrorHandler(
+    withAuth(),
+    withRole(["ADMIN", "COORDINATOR"]),
+    sectionController.deleteSection.bind(sectionController)
+  )
+);
+
 module.exports = router;

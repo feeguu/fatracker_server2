@@ -13,7 +13,6 @@ class SectionService {
   async findAll({
     offset,
     limit,
-    code,
     courseCode,
     isActive,
     period,
@@ -23,16 +22,10 @@ class SectionService {
   }) {
     const where = {};
 
-    if (code) {
-      where.code = {
-        [Op.like]: `${code}%`,
-      };
-    }
+    const course = await this.courseService.getByCode(courseCode.toUpperCase());
 
     if (courseCode) {
-      where.code = {
-        [Op.like]: `${courseCode}%`,
-      };
+      where.courseId = course.id;
     }
 
     if (isActive !== undefined) {
@@ -62,13 +55,11 @@ class SectionService {
     });
   }
 
-  async createSection({ courseId, period, year, yearSemester, semester }) {
+  async create({ courseId, period, year, yearSemester, semester }) {
     const course = await this.courseService.getById(courseId); // This verifies that the course exists, if not, it will throw an error
 
-    const code = `${course.code}_${semester}-${period}-${yearSemester}/${year}`;
-
     const conflict = await Section.findOne({
-      where: { code },
+      where: { courseId, year, semester, yearSemester, period },
     });
 
     if (conflict) {
@@ -76,7 +67,6 @@ class SectionService {
     }
 
     return await Section.create({
-      code,
       period,
       courseId: course.id,
       year,
@@ -93,12 +83,7 @@ class SectionService {
     return section;
   }
 
-  async getByCode(code) {
-    const section = await Section.findOne({ where: { code } });
-    return section;
-  }
-
-  async updateSection(id, { period, year, yearSemester, semester }) {
+  async update(id, { period, year, yearSemester, semester }) {
     const section = await this.getById(id);
 
     if (period) section.period = period;
@@ -107,6 +92,11 @@ class SectionService {
     if (semester) section.semester = semester;
 
     return await section.save();
+  }
+
+  async delete(id) {
+    const section = await this.getById(id);
+    await section.destroy();
   }
 }
 
