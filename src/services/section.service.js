@@ -97,6 +97,17 @@ class SectionService {
     const section = await Section.findOne({ where: { code } });
     return section;
   }
+
+  async updateSection(id, { period, year, yearSemester, semester }) {
+    const section = await this.getById(id);
+
+    if (period) section.period = period;
+    if (year) section.year = year;
+    if (yearSemester) section.yearSemester = yearSemester;
+    if (semester) section.semester = semester;
+
+    return await section.save();
+  }
 }
 
 module.exports = { SectionService };

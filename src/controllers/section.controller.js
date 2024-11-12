@@ -84,6 +84,40 @@ class SectionController {
 
     return res.status(201).json(section);
   }
+
+  async updateSection(req, res) {
+    const bodySchema = joi.object({
+      courseId: joi.number().integer(),
+      period: joi.string().valid("MORNING", "AFTERNOON", "NIGHT"),
+      year: joi.number().integer().min(1),
+      semester: joi.number().integer().min(1),
+      yearSemester: joi
+        .alternatives()
+        .try(joi.string().valid("1", "2"), joi.number().valid(1, 2))
+        .custom((value, helpers) => {
+          return String(value);
+        }),
+    });
+
+    const { value, error } = bodySchema.validate(req.body, {
+      abortEarly: false,
+      allowUnknown: true,
+    });
+
+    if (error) {
+      throw new HttpError(
+        400,
+        error.details.map((detail) => detail.message).join(", ")
+      );
+    }
+
+    const section = await this.sectionService.updateSection(
+      req.params.id,
+      value
+    );
+
+    return res.status(200).json(section);
+  }
 }
 
 module.exports = { SectionController };
