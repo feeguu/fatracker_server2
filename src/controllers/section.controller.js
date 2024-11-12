@@ -120,6 +120,39 @@ class SectionController {
 
     return res.status(204).end();
   }
+
+  async assignProfessor(req, res) {
+    const bodySchema = joi.object({
+      staffId: joi.number().integer().required(),
+    });
+
+    const { value, error } = bodySchema.validate(req.body, {
+      abortEarly: false,
+      allowUnknown: true,
+    });
+
+    if (error) {
+      throw new HttpError(
+        400,
+        error.details.map((detail) => detail.message).join(", ")
+      );
+    }
+
+    const newSection = await this.sectionService.assignProfessor(
+      req.params.id,
+      value.staffId
+    );
+
+    return res.status(200).json(newSection);
+  }
+
+  async unassignProfessor(req, res) {
+    const newSection = await this.sectionService.unassignProfessor(
+      req.params.id
+    );
+
+    return res.status(200).json(newSection);
+  }
 }
 
 module.exports = { SectionController };

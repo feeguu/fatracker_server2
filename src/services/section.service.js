@@ -1,13 +1,19 @@
 const { Op } = require("sequelize");
 const HttpError = require("../errors/HttpError");
 const { Section } = require("../models/section");
+const { Staff } = require("../models/staff");
+const { Role } = require("../models/role");
+const { Teaching } = require("../models/teaching");
 
 class SectionService {
   /**
    * @param {import("../services/course.service").CourseService} courseService
+   * @param {import("../services/staff.service").StaffService} staffService
    */
-  constructor(courseService) {
+
+  constructor(courseService, staffService) {
     this.courseService = courseService;
+    this.staffService = staffService;
   }
 
   async findAll({
@@ -97,6 +103,54 @@ class SectionService {
   async delete(id) {
     const section = await this.getById(id);
     await section.destroy();
+  }
+
+  async assignProfessor(sectionId, staffId) {
+    const section = await this.getById(sectionId);
+    let staff = await this.staffService.findById(staffId);
+
+    if (!staff) {
+      throw new HttpError(404, "Staff not found");
+    }
+
+    const role = Role.findOne({ where: { name: "PROFESSOR" } });
+
+    if (!staff.roles.includes("PROFESSOR")) {
+      staff = this.staffService.addRole(staff.id, "PROFESSOR");
+    }
+
+    const staffRoles = staff.staffRoles.find(
+      (sr) => sr.role.name == "PROFESSOR"
+    );
+
+    const oldTeaching = await section.getTeaching();
+
+    if (oldTeaching) {
+      if (oldTeaching.staffRoleId == staffRoles.id) return section;
+      await oldTeaching.destroy();
+    }
+
+    const teaching = await Teaching.create({
+      sectionId: section.id,
+      staffRoleId: staffRoles.id,
+    });
+
+    await section.reload();
+    return section;
+  }
+
+  async unassignProfessor(sectionId) {
+    const section = await this.getById(sectionId);
+    const teaching = await section.getTeaching();
+
+    if (!teaching) {
+      throw new HttpError(
+        404,
+        "There is no professor assigned to this section"
+      );
+    }
+
+    await teaching.destroy();
   }
 }
 

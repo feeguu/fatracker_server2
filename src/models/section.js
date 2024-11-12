@@ -1,5 +1,6 @@
 const { Model, DataTypes } = require("sequelize");
 const { sequelize } = require("../config/sequelize");
+const { Teaching } = require("./teaching");
 
 class Section extends Model {}
 
@@ -45,6 +46,7 @@ Section.init(
     paranoid: true,
     defaultScope: {
       order: [["id", "ASC"]],
+      include: [{ model: Teaching, as: "teaching", include: ["staffRole"] }],
     },
   }
 );

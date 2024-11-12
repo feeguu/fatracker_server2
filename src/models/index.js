@@ -5,6 +5,7 @@ const { StaffRole } = require("./staff-role");
 const { Course } = require("./course");
 const { Coordination } = require("./coordination");
 const { Section } = require("./section");
+const { Teaching } = require("./teaching");
 
 const Config = require("../config/config");
 const { seed } = require("../seeders");
@@ -62,6 +63,30 @@ Course.hasMany(Section, {
   foreignKey: "courseId",
   as: "sections",
   onDelete: "CASCADE",
+});
+
+// Teaching
+
+Teaching.belongsTo(StaffRole, {
+  foreignKey: "staffRoleId",
+  as: "staffRole",
+});
+
+StaffRole.hasMany(Teaching, {
+  foreignKey: "staffRoleId",
+  as: "teachings",
+  onDelete: "CASCADE",
+});
+
+Teaching.belongsTo(Section, {
+  foreignKey: "sectionId",
+  as: "section",
+});
+
+Section.hasOne(Teaching, {
+  foreignKey: "sectionId",
+  as: "teaching",
+  onDelete: "SET NULL",
 });
 
 async function init() {

@@ -11,7 +11,7 @@ const router = require("express").Router();
 
 const staffService = new StaffService();
 const courseService = new CourseService(staffService);
-const sectionService = new SectionService(courseService);
+const sectionService = new SectionService(courseService, staffService);
 
 const sectionController = new SectionController(sectionService);
 
@@ -48,6 +48,24 @@ router.delete(
     withAuth(),
     withRole(["ADMIN", "COORDINATOR"]),
     sectionController.deleteSection.bind(sectionController)
+  )
+);
+
+router.put(
+  "/:id/professor",
+  ...withErrorHandler(
+    withAuth(),
+    withRole(["ADMIN", "COORDINATOR"]),
+    sectionController.assignProfessor.bind(sectionController)
+  )
+);
+
+router.delete(
+  "/:id/professor",
+  ...withErrorHandler(
+    withAuth(),
+    withRole(["ADMIN", "COORDINATOR"]),
+    sectionController.unassignProfessor.bind(sectionController)
   )
 );
 
