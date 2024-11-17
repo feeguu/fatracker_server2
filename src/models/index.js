@@ -6,13 +6,14 @@ const { Course } = require("./course");
 const { Coordination } = require("./coordination");
 const { Section } = require("./section");
 const { Teaching } = require("./teaching");
+const { Student } = require("./student");
 
 const Config = require("../config/config");
 const { seed } = require("../seeders");
 
 const config = Config.getInstance();
 
-// Roles asscociations
+//#region Roles asscociations
 
 StaffRole.belongsTo(Staff, { foreignKey: "staffId", as: "staff" });
 StaffRole.belongsTo(Role, { foreignKey: "roleId", as: "role" });
@@ -27,8 +28,9 @@ Role.hasMany(StaffRole, {
   as: "staffRoles",
   onDelete: "CASCADE",
 });
+//#endregion
 
-// Coordination associations
+//#region Coordination associations
 
 Coordination.belongsTo(StaffRole, {
   foreignKey: "staffRoleId",
@@ -51,8 +53,9 @@ Coordination.hasOne(Course, {
   as: "course",
   onDelete: "SET NULL",
 });
+//#endregion
 
-// Section-Course associations
+//#region Section-Course associations
 
 Section.belongsTo(Course, {
   foreignKey: "courseId",
@@ -64,8 +67,9 @@ Course.hasMany(Section, {
   as: "sections",
   onDelete: "CASCADE",
 });
+//#endregion
 
-// Teaching
+//#region Professor-Section associations
 
 Teaching.belongsTo(StaffRole, {
   foreignKey: "staffRoleId",
@@ -89,6 +93,8 @@ Section.hasOne(Teaching, {
   onDelete: "SET NULL",
 });
 
+//#endregion
+
 async function init() {
   switch (config.db.sync) {
     case "alter":
@@ -103,4 +109,10 @@ async function init() {
   }
 }
 
-init();
+init()
+  .then(() => {
+    console.log("Database initialized");
+  })
+  .catch((err) => {
+    console.error(err);
+  });
