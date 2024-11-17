@@ -20,7 +20,7 @@ router.get(
   )
 );
 
-// Apenas cursos relacionados ao staff autenticado, se não for deve retornar 403
+// Apenas cursos relacionados ao user autenticado, se não for deve retornar 403
 router.get(
   "/:id",
   ...withErrorHandler(

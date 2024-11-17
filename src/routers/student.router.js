@@ -14,7 +14,7 @@ router.get(
   "/",
   ...withErrorHandler(
     withAuth(),
-    withRole(["ADMIN", "PRINCIPAL", "COORDINATOR", "PROFESSOR"]),
+    withRole(["ADMIN", "COORDINATOR", "PROFESSOR"]),
     studentController.getStudents.bind(studentController)
   )
 );
@@ -23,7 +23,7 @@ router.get(
   "/:ra",
   ...withErrorHandler(
     withAuth(),
-    withRole(["ADMIN", "PRINCIPAL", "COORDINATOR", "PROFESSOR"]),
+    withRole(["ADMIN", "COORDINATOR", "PROFESSOR"]),
     studentController.getStudent.bind(studentController)
   )
 );
@@ -32,7 +32,7 @@ router.post(
   "/",
   ...withErrorHandler(
     withAuth(),
-    withRole(["ADMIN", "PRINCIPAL", "COORDINATOR", "PROFESSOR"]),
+    withRole(["ADMIN", "COORDINATOR", "PROFESSOR"]),
     studentController.findOrCreateStudent.bind(studentController)
   )
 );
@@ -41,7 +41,7 @@ router.patch(
   "/:ra",
   ...withErrorHandler(
     withAuth(),
-    withRole(["ADMIN", "PRINCIPAL", "COORDINATOR", "PROFESSOR"]),
+    withRole(["ADMIN", "COORDINATOR", "PROFESSOR", "STUDENT"]),
     studentController.updateStudent.bind(studentController)
   )
 );
@@ -50,15 +50,36 @@ router.delete(
   "/:ra",
   ...withErrorHandler(
     withAuth(),
-    withRole(["ADMIN", "PRINCIPAL", "COORDINATOR", "PROFESSOR"]),
+    withRole(["ADMIN", "COORDINATOR", "PROFESSOR"]),
     studentController.deleteStudent.bind(studentController)
   )
 );
 
-router.post("/:ra/sections", (req, res) => {
-  res.send("POST /students/:ra/sections");
-});
+router.get(
+  "/:ra/sections",
+  ...withErrorHandler(
+    withAuth(),
+    withRole(["STAFF", "STUDENT"]),
+    studentController.getStudentSections.bind(studentController)
+  )
+);
 
-router.delete("/:ra/sections/:sectionId", (req, res) => {});
+router.post(
+  "/:ra/sections",
+  ...withErrorHandler(
+    withAuth(),
+    withRole(["ADMIN", "COORDINATOR", "PROFESSOR"]),
+    studentController.addStudentToSection.bind(studentController)
+  )
+);
+
+router.delete(
+  "/:ra/sections/:sectionId",
+  ...withErrorHandler(
+    withAuth(),
+    withRole(["ADMIN", "COORDINATOR", "PROFESSOR"]),
+    studentController.removeStudentFromSection.bind(studentController)
+  )
+);
 
 module.exports = router;

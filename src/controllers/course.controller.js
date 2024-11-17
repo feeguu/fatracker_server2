@@ -35,7 +35,8 @@ class CourseController {
 
   async getCourseById(req, res) {
     const { id } = req.params;
-    const course = await this.courseService.getById(id);
+    const user = res.locals.user; // for filtering access
+    const course = await this.courseService.getById(user, id);
     res.status(200).json(course);
   }
 

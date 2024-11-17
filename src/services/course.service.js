@@ -3,6 +3,11 @@ const HttpError = require("../errors/HttpError");
 const { Coordination } = require("../models/coordination");
 const { Course } = require("../models/course");
 const { Section } = require("../models/section");
+const { StudentSection } = require("../models/student-section");
+const { Teaching } = require("../models/teaching");
+const { StaffRole } = require("../models/staff-role");
+const { Staff } = require("../models/staff");
+const { required } = require("joi");
 
 class CourseService {
   /**
@@ -50,8 +55,26 @@ class CourseService {
       return [];
     }
 
-    // TODO: Implementar a busca de cursos por professor
-    return [];
+    const teachings = await Teaching.findAll({
+      where: {
+        staffRoleId: staffRole.id,
+      },
+      include: [
+        {
+          model: Section,
+          as: "section",
+          include: [
+            {
+              model: Course,
+              as: "course",
+            },
+          ],
+        },
+      ],
+    });
+
+    const courses = teachings.map((teaching) => teaching.section.course);
+    return courses;
   }
   /**
    *
@@ -68,6 +91,28 @@ class CourseService {
       const courses = await Course.findAll({ limit, offset, where });
       return courses;
     }
+
+    if (user.roles.includes("STUDENT")) {
+      console.log("STUDENT");
+      const courses = await Course.findAll({
+        where: {
+          "$sections.studentSections.studentId$": user.id,
+        },
+        include: [
+          {
+            model: Section,
+            as: "sections",
+            include: {
+              model: StudentSection,
+              as: "studentSections",
+            },
+          },
+        ],
+      });
+
+      return courses;
+    }
+
     const courses = [];
 
     courses.push(...(await this.getCoordinatorCourses(user)));
@@ -76,12 +121,98 @@ class CourseService {
     return courses;
   }
 
-  async getById(id) {
+  async getById(user, id) {
     const course = await Course.findByPk(id);
+
     if (!course) {
       throw new HttpError(404, "Course not found");
     }
-    return course;
+
+    if (user.roles.includes("ADMIN") || user.roles.includes("PRINCIPAL")) {
+      return course;
+    }
+
+    if (user.roles.includes("STUDENT")) {
+      const studentSections = await StudentSection.findAll({
+        where: { studentId: user.id },
+      });
+
+      const sectionIds = studentSections.map((ss) => ss.sectionId);
+
+      const section = await Section.findOne({
+        where: { courseId: course.id, id: sectionIds },
+      });
+
+      if (!section) {
+        throw new HttpError(403, "Forbidden");
+      }
+
+      return course;
+    }
+
+    if (user.roles.includes("COORDINATOR")) {
+      const coordination = await Coordination.findOne({
+        where: {
+          "$course.id$": course.id,
+          "$staffRole.staff.id$": user.id,
+        },
+        include: [
+          {
+            model: Course,
+            as: "course",
+            required: true,
+          },
+          {
+            model: StaffRole,
+            as: "staffRole",
+            required: true,
+            include: {
+              model: Staff,
+              as: "staff",
+              required: true,
+            },
+          },
+        ],
+      });
+
+      if (!coordination) {
+        throw new HttpError(403, "Forbidden");
+      }
+
+      return course;
+    }
+
+    if (user.roles.includes("PROFESSOR")) {
+      const teaching = await Teaching.findOne({
+        where: {
+          "$section.courseId$": course.id,
+          "$staffRole.staff.id$": user.id,
+        },
+        include: [
+          {
+            model: Section,
+            as: "section",
+            required: true,
+          },
+          {
+            model: StaffRole,
+            as: "staffRole",
+            required: true,
+            include: {
+              model: Staff,
+              as: "staff",
+              required: true,
+            },
+          },
+        ],
+      });
+
+      if (!teaching) {
+        throw new HttpError(403, "Forbidden");
+      }
+    }
+
+    return {};
   }
 
   async getByCode(code) {
