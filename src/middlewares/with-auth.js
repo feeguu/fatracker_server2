@@ -36,8 +36,6 @@ function withAuth() {
         payload: { id, type },
       } = await jose.jwtVerify(token, secret);
 
-      console.log(type);
-
       if (type !== "staff" && type !== "student") {
         console.warn("Malformed token with type", type);
         throw new HttpError(401, "Unauthorized");

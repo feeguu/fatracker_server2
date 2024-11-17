@@ -1,5 +1,6 @@
 const joi = require("joi");
 const HttpError = require("../errors/HttpError");
+const { ROLES_HIERARCHY } = require("../models/staff");
 
 class StaffController {
   /**
@@ -85,6 +86,21 @@ class StaffController {
       throw new HttpError(400, error.details.map((d) => d.message).join(", "));
     }
     value.roles = value.roles.map((r) => r.trim().toUpperCase());
+
+    // user can't assign roles above his own
+    const hierarchyViolation = value.roles.some((role) => {
+      const userHighestRoleIndex = ROLES_HIERARCHY.findIndex((r) =>
+        res.locals.user.roles.includes(r)
+      );
+
+      const roleIndex = ROLES_HIERARCHY.indexOf(role);
+      return userHighestRoleIndex < roleIndex;
+    });
+
+    if (hierarchyViolation) {
+      throw new HttpError(403, "Cannot assign roles above your own");
+    }
+
     const staff = await this.staffService.create(value);
     res.status(201).json(staff);
   }

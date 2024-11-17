@@ -3,6 +3,8 @@ const { Model, DataTypes, Op } = require("sequelize");
 const { StaffRole } = require("./staff-role");
 const { Role } = require("./role");
 
+const ROLES_HIERARCHY = ["ADMIN", "PRINCIPAL", "COORDINATOR", "PROFESSOR"];
+
 class Staff extends Model {}
 
 Staff.init(
@@ -63,4 +65,4 @@ Staff.init(
   }
 );
 
-module.exports = { Staff };
+module.exports = { Staff, ROLES_HIERARCHY };
