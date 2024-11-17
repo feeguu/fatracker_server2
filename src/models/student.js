@@ -26,12 +26,23 @@ Student.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    roles: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return ["STUDENT"];
+      },
+    },
   },
   {
     sequelize,
     paranoid: true,
     defaultScope: {
       attributes: { exclude: ["password"] },
+    },
+    scopes: {
+      withPassword: {
+        attributes: { include: ["password"] },
+      },
     },
   }
 );

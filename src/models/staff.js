@@ -27,7 +27,9 @@ Staff.init(
     roles: {
       type: DataTypes.VIRTUAL,
       get() {
-        return this.staffRoles?.map((staffRole) => staffRole.role?.name) || [];
+        return ["STAFF"].concat(
+          this.staffRoles?.map((staffRole) => staffRole.role?.name) || []
+        );
       },
     },
   },

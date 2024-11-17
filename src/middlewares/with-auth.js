@@ -4,6 +4,7 @@ const jose = require("jose");
 const { AuthService } = require("../services/auth.service");
 const { StaffService } = require("../services/staff.service");
 const { JOSEError } = require("jose/errors");
+const { StudentService } = require("../services/student.service");
 
 /**
  *
@@ -13,15 +14,15 @@ const { JOSEError } = require("jose/errors");
  */
 
 /**
-    TODO: Implementar autenticação de aluno
 
     @param {Function} rule - Função que verifica se o usuário tem permissão, recebe o request e o usuário autenticado
 */
+const staffService = new StaffService();
+const studentService = new StudentService();
+const authService = new AuthService(staffService, studentService);
+
 function withAuth() {
   return async (req, res, next) => {
-    const staffService = new StaffService();
-    const authService = new AuthService(staffService);
-
     const token = req.headers.authorization;
     if (!token) {
       throw new HttpError(401, "Unauthorized");
@@ -35,13 +36,21 @@ function withAuth() {
         payload: { id, type },
       } = await jose.jwtVerify(token, secret);
 
+      console.log(type);
+
+      if (type !== "staff" && type !== "student") {
+        console.warn("Malformed token with type", type);
+        throw new HttpError(401, "Unauthorized");
+      }
+
       // TODO: passar o type para o authService e ele decidir qual serviço chamar
-      const user = await authService.getUser(id);
+      const user = await authService.getUser(id, type);
 
       if (!user) {
         throw new HttpError(401, "Unauthorized");
       }
 
+      res.locals.type = type;
       res.locals.user = user;
 
       next();

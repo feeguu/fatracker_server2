@@ -10,7 +10,7 @@ class AuthController {
     const schema = joi
       .object(
         {
-          email: joi.string().required(),
+          username: joi.string().required(), // can be email or ra
           password: joi.string().required(),
         },
         { abortEarly: false, allowUnknown: true }
@@ -19,20 +19,21 @@ class AuthController {
 
     const {
       error,
-      value: { email, password },
+      value: { username, password },
     } = schema.validate(req.body, { abortEarly: false, allowUnknown: true });
 
     if (error) {
-      throw new HttpError(400, "Invalid email or password");
+      throw new HttpError(400, "Invalid credentials");
     }
 
-    const token = await this.authService.login(email, password);
-    return res.status(200).json({ token });
+    const data = await this.authService.login(username, password);
+    return res.status(200).json(data);
   }
 
   async getUser(req, res) {
     const id = res.locals.user.id;
-    const user = await this.authService.getUser(id);
+    const type = res.locals.type;
+    const user = await this.authService.getUser(id, type);
     return res.status(200).json(user);
   }
 }

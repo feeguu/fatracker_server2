@@ -5,6 +5,7 @@ const { Staff } = require("../models/staff");
 const { StaffRole } = require("../models/staff-role");
 const HttpError = require("../errors/HttpError");
 const bcrypt = require("bcrypt");
+const { getUserByEmail } = require("../utils/email");
 class StaffService {
   /**
    * @param {Object} param0
@@ -72,7 +73,7 @@ class StaffService {
    * @param {Array<string>} param0.roles
    */
   async create({ name, email, roles: rolesNames }) {
-    const conflict = await Staff.findOne({ where: { email } });
+    const conflict = await getUserByEmail(email);
     if (conflict) {
       throw new HttpError(409, "Email already in use");
     }
@@ -164,7 +165,14 @@ class StaffService {
     }
 
     if (name) staff.name = name;
-    if (email) staff.email = email;
+    if (email) {
+      const conflict = await getUserByEmail(email);
+      if (conflict && conflict.id !== id) {
+        throw new HttpError(409, "Email already in use");
+      }
+
+      staff.email = email;
+    }
 
     await staff.save();
     return staff;

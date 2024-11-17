@@ -9,38 +9,51 @@ const bcrypt = require("bcrypt");
 const Config = require("../config/config");
 const { StaffService } = require("./staff.service");
 const HttpError = require("../errors/HttpError");
+const { Staff } = require("../models/staff");
+const { Student } = require("../models/student");
+const { getUserByEmail } = require("../utils/email");
+
+const WRONG_CREDENTIALS = "Invalid email or password";
 
 class AuthService {
   /**
    * @param staffService {StaffService}
+   * @param studentService {import("./student.service").StudentService}
    */
-  constructor(staffService) {
+  constructor(staffService, studentService) {
     this.staffService = staffService;
+    this.studentService = studentService;
   }
 
-  async login(email, password) {
-    console.log(email);
-    // Find user by email
-    const staff = await this.staffService.findByEmail(email, true);
+  async login(username, password) {
+    const isEmail = username.includes("@"); // kinda dumb but it works
 
-    if (!staff) {
-      throw new HttpError(400, "Invalid email or password");
+    let user = null;
+    if (isEmail) {
+      user = await getUserByEmail(username, true);
+    } else {
+      user = await this.studentService.findByRa(username, true);
     }
 
-    console.log(password, staff.password);
+    if (!user) {
+      throw new HttpError(400, WRONG_CREDENTIALS);
+    }
+
     // Check if password is correct
-    const isPasswordCorrect = await bcrypt.compare(password, staff.password);
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
-      throw new HttpError(400, "Invalid email or password");
+      throw new HttpError(400, WRONG_CREDENTIALS);
     }
     // Generate token
     const config = Config.getInstance();
     const secret = new TextEncoder().encode(config.jwt.secret);
 
+    const type = user.ra ? "student" : "staff"; // hacky way to determine type
+
     const jwt = await new jose.SignJWT({
-      id: staff.id,
-      type: "staff",
+      id: user.id,
+      type: type,
     })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
@@ -49,11 +62,19 @@ class AuthService {
       .sign(secret);
 
     // Return token
-    return jwt;
+    return { token: jwt, type };
   }
 
-  async getUser(id) {
-    return this.staffService.findById(id);
+  async getUser(id, type) {
+    switch (type) {
+      case "staff":
+        return this.staffService.findById(id);
+      case "student":
+        return this.studentService.findById(id);
+      default:
+        console.log("Invalid type", type);
+        throw new Error("Unreachable branch");
+    }
   }
 }
 

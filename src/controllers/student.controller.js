@@ -13,7 +13,9 @@ class StudentController {
   async getStudent(req, res) {
     const ra = req.params.ra;
     const student = await this.studentService.findByRa(ra);
-
+    if (!student) {
+      throw new HttpError(404, "Student not found");
+    }
     return res.status(200).json(student);
   }
 

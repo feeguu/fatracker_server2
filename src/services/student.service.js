@@ -2,13 +2,22 @@ const bcrypt = require("bcrypt");
 
 const HttpError = require("../errors/HttpError");
 const { Student } = require("../models/student");
+const { getUserByEmail } = require("../utils/email");
 
 class StudentService {
-  async findByRa(ra) {
-    const student = await Student.findOne({ where: { ra } });
-    if (!student) {
-      throw new HttpError(404, "Student not found");
+  async findByRa(ra, includePassword = false) {
+    let student = null;
+    if (includePassword) {
+      student = await Student.scope("withPassword").findOne({ where: { ra } });
+    } else {
+      student = await Student.findOne({ where: { ra } });
     }
+
+    return student;
+  }
+
+  async findById(id) {
+    const student = await Student.findByPk(id);
     return student;
   }
 
@@ -43,8 +52,8 @@ class StudentService {
     const student = await this.findByRa(ra);
     if (name) student.name = name;
     if (email) {
-      const conflict = await Student.findOne({ where: { email } });
-      if (conflict) {
+      const conflict = await getUserByEmail(email);
+      if (conflict && conflict?.ra !== ra) {
         throw new HttpError(409, "Email already in use");
       }
       student.email = email;

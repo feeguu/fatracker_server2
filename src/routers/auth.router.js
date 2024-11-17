@@ -4,9 +4,11 @@ const { withAuth } = require("../middlewares/with-auth");
 const { withErrorHandler } = require("../middlewares/with-error-handler");
 const { AuthService } = require("../services/auth.service");
 const { StaffService } = require("../services/staff.service");
+const { StudentService } = require("../services/student.service");
 
 const staffService = new StaffService();
-const authService = new AuthService(staffService);
+const studentService = new StudentService();
+const authService = new AuthService(staffService, studentService);
 
 const authController = new AuthController(authService);
 
