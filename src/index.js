@@ -9,6 +9,7 @@ const staffRouter = require("./routers/staff.router");
 const courseRouter = require("./routers/course.router");
 const sectionRouter = require("./routers/section.router");
 const studentRouter = require("./routers/student.router");
+const groupRouter = require("./routers/group.router");
 
 const config = Config.getInstance();
 
@@ -25,6 +26,7 @@ app.use("/staffs", staffRouter);
 app.use("/courses", courseRouter);
 app.use("/sections", sectionRouter);
 app.use("/students", studentRouter);
+app.use("/groups", groupRouter);
 
 app.use((err, req, res, next) => {
   if (err instanceof HttpError) {

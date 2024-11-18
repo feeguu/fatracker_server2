@@ -41,7 +41,6 @@ function withAuth() {
         throw new HttpError(401, "Unauthorized");
       }
 
-      // TODO: passar o type para o authService e ele decidir qual serviço chamar
       const user = await authService.getUser(id, type);
 
       if (!user) {

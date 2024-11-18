@@ -1,9 +1,3 @@
-/*
-  Serviço de autenticação
-  TODO: Adaptar para aceitar também autenticação de alunos,
-        no momento (01/11) só aceita autenticação de staff
-*/
-
 const jose = require("jose");
 const bcrypt = require("bcrypt");
 const Config = require("../config/config");

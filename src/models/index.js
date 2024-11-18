@@ -1,4 +1,5 @@
 const { sequelize } = require("../config/sequelize");
+
 const { Role } = require("./role");
 const { Staff } = require("./staff");
 const { StaffRole } = require("./staff-role");
@@ -7,10 +8,12 @@ const { Coordination } = require("./coordination");
 const { Section } = require("./section");
 const { Teaching } = require("./teaching");
 const { Student } = require("./student");
+const { StudentSection } = require("./student-section");
+const { Group } = require("./group");
+const { StudentGroup } = require("./student-group");
 
 const Config = require("../config/config");
 const { seed } = require("../seeders");
-const { StudentSection } = require("./student-section");
 
 const config = Config.getInstance();
 
@@ -122,6 +125,43 @@ StudentSection.belongsTo(Section, {
 
 //#endregion
 
+//#region Group associations
+
+Section.hasMany(Group, {
+  foreignKey: "sectionId",
+  as: "groups",
+  onDelete: "CASCADE",
+});
+
+Group.belongsTo(Section, {
+  foreignKey: "sectionId",
+  as: "section",
+});
+
+Group.hasMany(StudentGroup, {
+  foreignKey: "groupId",
+  as: "studentGroups",
+  onDelete: "CASCADE",
+});
+
+StudentGroup.belongsTo(Group, {
+  foreignKey: "groupId",
+  as: "group",
+});
+
+Student.hasMany(StudentGroup, {
+  foreignKey: "studentId",
+  as: "studentGroups",
+  onDelete: "CASCADE",
+});
+
+StudentGroup.belongsTo(Student, {
+  foreignKey: "studentId",
+  as: "student",
+});
+
+//#endregion
+
 async function init() {
   switch (config.db.sync) {
     case "alter":
@@ -139,43 +179,13 @@ async function init() {
   }
 }
 
-const resetIndexesKeys = async () => {
-  try {
-    const [results] = await sequelize.query(`
-          SELECT TABLE_NAME, INDEX_NAME
-          FROM INFORMATION_SCHEMA.STATISTICS
-          WHERE TABLE_SCHEMA = '${sequelize.config.database}';
-      `);
-
-    for (const { TABLE_NAME, INDEX_NAME } of results) {
-      if (INDEX_NAME !== "PRIMARY") {
-        console.log(`Removing index ${INDEX_NAME} from table ${TABLE_NAME}`);
-        await sequelize.query(
-          `ALTER TABLE \`${TABLE_NAME}\` DROP INDEX \`${INDEX_NAME}\``
-        );
-      }
-    }
-
-    console.log("All non-primary indexes removed!");
-  } catch (error) {
-    console.error("Error while removing indexes:", error);
-  }
-};
-
 init()
   .then(() => {
     console.log("Database initialized");
   })
-  .catch((err) => {
-    console.error("Error while initializing database:", err);
-    if (err.code === "ER_TOO_MANY_KEYS") {
-      console.warn("Forcing reset of indexes keys");
-      resetIndexesKeys().then(() => {
-        init().catch((err) => {
-          console.error("Error while reinitializing database:", err);
-        });
-      });
-    } else {
-      throw err;
+  .catch(async (error) => {
+    console.error("Error while initializing database", error.parent.code);
+    if (config.db.sync !== "force") {
+      console.log("Try to force sync the database");
     }
   });

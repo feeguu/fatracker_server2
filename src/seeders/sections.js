@@ -113,10 +113,8 @@ async function seedSections() {
       },
     });
 
-    if (!created) {
-      console.error(`[SEED] Section ${section} already exists`);
-    } else {
-      console.log(`[SEED] Section created`);
+    if (created) {
+      console.log(`[SEED] Section ${createdSection.id} created`);
     }
   }
 }
