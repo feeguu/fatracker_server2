@@ -8,6 +8,9 @@ Teaching.init(
   {
     sequelize,
     paranoid: true,
+    defaultScope: {
+      order: ["id"],
+    },
   }
 );
 

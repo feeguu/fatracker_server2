@@ -37,6 +37,7 @@ Student.init(
     sequelize,
     paranoid: true,
     defaultScope: {
+      order: ["id"],
       attributes: { exclude: ["password"] },
     },
     scopes: {

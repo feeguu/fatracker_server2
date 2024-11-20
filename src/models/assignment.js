@@ -1,19 +1,28 @@
 const { Model, DataTypes } = require("sequelize");
 const { sequelize } = require("../config/sequelize");
 
-class Role extends Model {}
+class Assignment extends Model {}
 
-Role.init(
+Assignment.init(
   {
     id: {
       type: DataTypes.INTEGER,
-      primaryKey: true,
       autoIncrement: true,
+      primaryKey: true,
     },
-    name: {
+
+    title: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+    },
+    content: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+
+    dueDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
     },
   },
   {
@@ -25,4 +34,6 @@ Role.init(
   }
 );
 
-module.exports = { Role };
+module.exports = {
+  Assignment,
+};

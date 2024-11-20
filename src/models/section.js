@@ -45,7 +45,7 @@ Section.init(
     sequelize,
     paranoid: true,
     defaultScope: {
-      order: [["id", "ASC"]],
+      order: ["id"],
       include: [{ model: Teaching, as: "teaching", include: ["staffRole"] }],
     },
   }

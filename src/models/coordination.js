@@ -8,6 +8,9 @@ Coordination.init(
   {
     sequelize,
     paranoid: true,
+    defaultScope: {
+      order: ["id"],
+    },
   }
 );
 

@@ -39,6 +39,7 @@ Staff.init(
     sequelize,
     paranoid: true,
     defaultScope: {
+      order: ["id"],
       include: [
         {
           model: StaffRole,

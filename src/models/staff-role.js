@@ -12,6 +12,7 @@ StaffRole.init(
     sequelize,
     paranoid: true,
     defaultScope: {
+      order: ["id"],
       include: [
         { model: Role, as: "role" },
         { model: Coordination, as: "coordinations" },

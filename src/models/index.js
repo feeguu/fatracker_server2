@@ -11,6 +11,7 @@ const { Student } = require("./student");
 const { StudentSection } = require("./student-section");
 const { Group } = require("./group");
 const { StudentGroup } = require("./student-group");
+const { Assignment } = require("./assignment");
 
 const Config = require("../config/config");
 const { seed } = require("../seeders");
@@ -162,6 +163,19 @@ StudentGroup.belongsTo(Student, {
 
 //#endregion
 
+//#region Assignment
+Assignment.belongsTo(Section, {
+  foreignKey: "sectionId",
+  as: "section",
+});
+
+Section.hasMany(Assignment, {
+  foreignKey: "sectionId",
+  as: "assignments",
+  onDelete: "CASCADE",
+});
+//#endregion
+
 async function init() {
   switch (config.db.sync) {
     case "alter":
@@ -185,6 +199,7 @@ init()
   })
   .catch(async (error) => {
     console.error("Error while initializing database", error.parent.code);
+    console.log("Error: ", error);
     if (config.db.sync !== "force") {
       console.log("Try to force sync the database");
     }

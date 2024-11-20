@@ -21,6 +21,7 @@ Group.init(
     sequelize,
     paranoid: true,
     defaultScope: {
+      order: ["id"],
       include: [
         {
           model: StudentGroup,

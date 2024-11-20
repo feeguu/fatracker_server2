@@ -4,6 +4,10 @@ const { Section } = require("../models/section");
 const { Staff } = require("../models/staff");
 const { Role } = require("../models/role");
 const { Teaching } = require("../models/teaching");
+const { Coordination } = require("../models/coordination");
+const { StudentSection } = require("../models/student-section");
+const { StaffRole } = require("../models/staff-role");
+const { Course } = require("../models/course");
 
 class SectionService {
   /**
@@ -151,6 +155,91 @@ class SectionService {
     }
 
     await teaching.destroy();
+  }
+
+  async getUserPermissions(user, sectionId) {
+    const section = await this.getById(sectionId);
+
+    const permissions = {
+      view: false,
+      edit: false,
+    };
+
+    if (user.roles.includes("ADMIN")) {
+      permissions.view = true;
+      permissions.edit = true;
+      return permissions;
+    }
+
+    if (user.roles.includes("PROFESSOR")) {
+      const teaching = await Teaching.findOne({
+        where: {
+          "$section.id$": section.id,
+          "$staffRole.staffId$": user.id,
+        },
+        include: [
+          {
+            model: StaffRole,
+            as: "staffRole",
+            required: true,
+          },
+          {
+            model: Section,
+            as: "section",
+            required: true,
+          },
+        ],
+      });
+
+      if (teaching) {
+        permissions.view = true;
+        permissions.edit = true;
+
+        return permissions;
+      }
+    }
+
+    if (user.roles.includes("COORDINATOR")) {
+      const coordination = await Coordination.findOne({
+        where: {
+          "$course.id$": section.courseId,
+          "$staffRole.staffId$": user.id,
+        },
+        include: [
+          {
+            model: StaffRole,
+            as: "staffRole",
+            required: true,
+          },
+          { model: Course, as: "course", required: true },
+        ],
+      });
+
+      if (coordination) {
+        permissions.view = true;
+        permissions.edit = true;
+
+        return permissions;
+      }
+    }
+
+    if (user.roles.includes("STUDENT")) {
+      const studentSection = await StudentSection.findOne({
+        where: {
+          sectionId: section.id,
+          studentId: user.id,
+        },
+      });
+
+      if (studentSection) {
+        permissions.view = true;
+        permissions.edit = false;
+
+        return permissions;
+      }
+    }
+
+    return permissions;
   }
 }
 
