@@ -65,8 +65,8 @@ class SectionService {
     });
   }
 
-  async create({ courseId, period, year, yearSemester, semester }) {
-    const course = await this.courseService.getById(courseId); // This verifies that the course exists, if not, it will throw an error
+  async create(user, { courseId, period, year, yearSemester, semester }) {
+    const course = await this.courseService.getById(user, courseId); // This verifies that the course exists, if not, it will throw an error
 
     const conflict = await Section.findOne({
       where: { courseId, year, semester, yearSemester, period },

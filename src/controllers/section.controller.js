@@ -80,7 +80,9 @@ class SectionController {
       );
     }
 
-    const section = await this.sectionService.create(value);
+    const user = res.locals.user;
+
+    const section = await this.sectionService.create(user, value);
 
     return res.status(201).json(section);
   }
