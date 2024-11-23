@@ -32,9 +32,10 @@ class SectionService {
   }) {
     const where = {};
 
-    const course = await this.courseService.getByCode(courseCode.toUpperCase());
-
     if (courseCode) {
+      const course = await this.courseService.getByCode(
+        courseCode.toUpperCase()
+      );
       where.courseId = course.id;
     }
 
@@ -120,7 +121,7 @@ class SectionService {
     const role = Role.findOne({ where: { name: "PROFESSOR" } });
 
     if (!staff.roles.includes("PROFESSOR")) {
-      staff = this.staffService.addRole(staff.id, "PROFESSOR");
+      staff = await this.staffService.addRole(staff.id, "PROFESSOR");
     }
 
     const staffRoles = staff.staffRoles.find(
