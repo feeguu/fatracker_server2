@@ -27,12 +27,14 @@ app.use("/staffs", staffRouter);
 app.use("/courses", courseRouter);
 app.use("/sections", sectionRouter);
 app.use("/students", studentRouter);
-app.use("/groups", groupRouter);
+// app.use("/groups", groupRouter);
 app.use("/assignments", assignmentRouter);
 
 app.use((err, req, res, next) => {
   if (err instanceof HttpError) {
     res.status(err.statusCode).json({ message: err.message });
+  } else if (err instanceof SyntaxError && err.type === "entity.parse.failed") {
+    res.status(400).json({ message: "Invalid JSON" });
   } else {
     console.error(err);
     res.status(500).json({ message: "Internal Server Error" });

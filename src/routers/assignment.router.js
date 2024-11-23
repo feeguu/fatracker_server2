@@ -9,8 +9,18 @@ const { SectionService } = require("../services/section.service");
 const {
   AssignmentController,
 } = require("../controllers/assignment.controller");
+const { CourseService } = require("../services/course.service");
+const { StaffService } = require("../services/staff.service");
+const { StudentService } = require("../services/student.service");
 
-const sectionService = new SectionService();
+const staffService = new StaffService();
+const courseService = new CourseService(staffService);
+const studentService = new StudentService();
+const sectionService = new SectionService(
+  courseService,
+  staffService,
+  studentService
+);
 const assignmentService = new AssignmentService(sectionService);
 const assignmentController = new AssignmentController(assignmentService);
 

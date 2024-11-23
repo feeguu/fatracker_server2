@@ -8,16 +8,19 @@ const { Coordination } = require("../models/coordination");
 const { StudentSection } = require("../models/student-section");
 const { StaffRole } = require("../models/staff-role");
 const { Course } = require("../models/course");
+const { Student } = require("../models/student");
 
 class SectionService {
   /**
    * @param {import("../services/course.service").CourseService} courseService
    * @param {import("../services/staff.service").StaffService} staffService
+   * @param {import("../services/student.service").StudentService} studentService
    */
 
-  constructor(courseService, staffService) {
+  constructor(courseService, staffService, studentService) {
     this.courseService = courseService;
     this.staffService = staffService;
+    this.studentService = studentService;
   }
 
   async findAll(
@@ -67,6 +70,7 @@ class SectionService {
         where,
         offset,
         limit,
+        include: ["course", "studentSections"],
       });
     }
 
@@ -95,6 +99,7 @@ class SectionService {
               },
             ],
           },
+          "studentSections",
         ],
         offset,
         limit,
@@ -123,8 +128,19 @@ class SectionService {
   }
 
   async getById(user, id) {
-    const section = await Section.findByPk(id);
-
+    const section = await Section.findByPk(id, {
+      include: [
+        {
+          model: StudentSection,
+          as: "studentSections",
+          include: {
+            model: Student,
+            as: "student",
+            required: true,
+          },
+        },
+      ],
+    });
     if (!section) {
       throw new HttpError(404, "Section not found");
     }
@@ -262,7 +278,11 @@ class SectionService {
    * @returns {Promise<{view: boolean, edit: boolean}>}
    */
   async getUserPermissions(user, sectionId) {
-    const section = await this.getById(sectionId);
+    const section = Section.findByPk(sectionId);
+
+    if (!section) {
+      throw new HttpError(404, "Section not found");
+    }
 
     const permissions = {
       view: false,
@@ -344,6 +364,57 @@ class SectionService {
     }
 
     return permissions;
+  }
+
+  async putStudents(user, sectionId, students) {
+    const section = await this.getById(user, sectionId);
+    const permissions = await this.getUserPermissions(user, section.id);
+
+    if (!permissions.edit) {
+      throw new HttpError(
+        403,
+        "You do not have permission to assign students to this section"
+      );
+    }
+
+    const studentsPromise = students.map((student) => {
+      return this.studentService.findOrCreate(student);
+    });
+
+    const studentsInstances = await Promise.all(studentsPromise);
+
+    const studentSections = await StudentSection.findAll({
+      where: { sectionId: section.id },
+    });
+
+    const add = studentsInstances
+      .filter(
+        ({ created, student }) =>
+          !studentSections.find((ss) => ss.studentId == student.id) &&
+          student.id
+      )
+      .map(({ student }) => student);
+
+    const remove = studentSections.filter(
+      (ss) =>
+        !studentsInstances.find(({ student }) => student.id == ss.studentId)
+    );
+
+    const addPromises = add.map((student) => {
+      return StudentSection.create({
+        studentId: student.id,
+        sectionId: section.id,
+      });
+    });
+
+    const removePromises = remove.map((ss) => {
+      return ss.destroy();
+    });
+
+    await Promise.all([...addPromises, ...removePromises]);
+
+    await section.reload();
+    return section;
   }
 }
 

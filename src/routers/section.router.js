@@ -6,12 +6,18 @@ const { StaffService } = require("../services/staff.service");
 const { SectionService } = require("../services/section.service");
 const { CourseService } = require("../services/course.service");
 const { SectionController } = require("../controllers/section.controller");
+const { StudentService } = require("../services/student.service");
 
 const router = require("express").Router();
 
 const staffService = new StaffService();
 const courseService = new CourseService(staffService);
-const sectionService = new SectionService(courseService, staffService);
+const studentService = new StudentService();
+const sectionService = new SectionService(
+  courseService,
+  staffService,
+  studentService
+);
 
 const sectionController = new SectionController(sectionService);
 
@@ -73,6 +79,15 @@ router.delete(
     withAuth(),
     withRole(["ADMIN", "COORDINATOR"]),
     sectionController.unassignProfessor.bind(sectionController)
+  )
+);
+
+router.put(
+  "/:id/students",
+  ...withErrorHandler(
+    withAuth(),
+    withRole(["ADMIN", "COORDINATOR", "PROFESSOR"]),
+    sectionController.putStudents.bind(sectionController)
   )
 );
 

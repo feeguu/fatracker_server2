@@ -24,7 +24,7 @@ class StudentController {
       .object({
         offset: joi.number().integer().min(0).default(0),
         limit: joi.number().integer().min(1),
-        sectionId: joi.number().integer().trim(),
+        sectionId: joi.number().integer(),
         courseCode: joi.string().trim(),
       })
       .nand("sectionId", "courseCode")

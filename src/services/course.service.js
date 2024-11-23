@@ -93,7 +93,6 @@ class CourseService {
     }
 
     if (user.roles.includes("STUDENT")) {
-      console.log("STUDENT");
       const courses = await Course.findAll({
         where: {
           "$sections.studentSections.studentId$": user.id,
@@ -284,7 +283,6 @@ class CourseService {
 
     const previousCoordination = await course.getCoordination();
     if (previousCoordination) {
-      console.log(previousCoordination);
       await previousCoordination.destroy();
     }
 

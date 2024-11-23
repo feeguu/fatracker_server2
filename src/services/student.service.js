@@ -185,8 +185,6 @@ class StudentService {
       include: { model: Section, as: "section" },
     });
 
-    console.log(studentSections);
-
     return studentSections.map((studentSection) => studentSection.section);
   }
 }

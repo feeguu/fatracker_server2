@@ -171,6 +171,41 @@ class SectionController {
 
     return res.status(200).json(newSection);
   }
+
+  async putStudents(req, res) {
+    const bodySchema = joi.object({
+      students: joi
+        .array()
+        .items(
+          joi.object({
+            ra: joi.string().trim().required(),
+            name: joi.string().trim().required(),
+          })
+        )
+        .min(1)
+        .required(),
+    });
+
+    const { value, error } = bodySchema.validate(req.body, {
+      abortEarly: false,
+      allowUnknown: true,
+    });
+
+    if (error) {
+      throw new HttpError(
+        400,
+        error.details.map((detail) => detail.message).join(", ")
+      );
+    }
+    const user = res.locals.user;
+    const newSection = await this.sectionService.putStudents(
+      user,
+      req.params.id,
+      value.students
+    );
+
+    return res.status(200).json(newSection);
+  }
 }
 
 module.exports = { SectionController };
