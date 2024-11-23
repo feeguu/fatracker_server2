@@ -5,6 +5,7 @@ const { AuthService } = require("../services/auth.service");
 const { StaffService } = require("../services/staff.service");
 const { JOSEError } = require("jose/errors");
 const { StudentService } = require("../services/student.service");
+const { MailService } = require("../services/mail.service");
 
 /**
  *
@@ -13,11 +14,8 @@ const { StudentService } = require("../services/student.service");
  * @param {import("express").NextFunction} next
  */
 
-/**
-
-    @param {Function} rule - Função que verifica se o usuário tem permissão, recebe o request e o usuário autenticado
-*/
-const staffService = new StaffService();
+const mailService = new MailService();
+const staffService = new StaffService(mailService);
 const studentService = new StudentService();
 const authService = new AuthService(staffService, studentService);
 

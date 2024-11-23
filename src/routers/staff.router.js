@@ -6,8 +6,10 @@ const { StaffService } = require("../services/staff.service");
 const { withAuth, byRoles } = require("../middlewares/with-auth");
 const { withErrorHandler } = require("../middlewares/with-error-handler");
 const { withRole } = require("../middlewares/with-role");
+const { MailService } = require("../services/mail.service");
 
-const staffService = new StaffService();
+const mailService = new MailService();
+const staffService = new StaffService(mailService);
 const staffController = new StaffController(staffService);
 
 router.get(

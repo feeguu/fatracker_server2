@@ -31,6 +31,15 @@ class Config {
       email: "",
       password: "",
     };
+    this.email = {
+      service: "",
+      username: "",
+      password: "",
+    };
+
+    this.frontend = {
+      url: "",
+    };
   }
 
   /**
@@ -74,6 +83,11 @@ class Config {
           then: joi.required(),
           otherwise: joi.optional(),
         }),
+        EMAIL_SERVICE: joi.string().required(),
+        EMAIL_USERNAME: joi.string().required(),
+        EMAIL_PASSWORD: joi.string().required(),
+        EMAIL_FROM: joi.string().required(),
+        FRONTEND_URL: joi.string().uri().required(),
       })
       .unknown(true);
 
@@ -109,6 +123,12 @@ class Config {
     config.admin = {
       email: envVars.ADMIN_EMAIL,
       password: envVars.ADMIN_PASSWORD,
+    };
+    config.email = {
+      service: envVars.EMAIL_SERVICE,
+      username: envVars.EMAIL_USERNAME,
+      password: envVars.EMAIL_PASSWORD,
+      from: envVars.EMAIL_FROM,
     };
     Config.#instance = config;
     // console.log("Config instance created\n", JSON.stringify(config, null, 2));

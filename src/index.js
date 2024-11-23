@@ -11,6 +11,7 @@ const sectionRouter = require("./routers/section.router");
 const studentRouter = require("./routers/student.router");
 const groupRouter = require("./routers/group.router");
 const assignmentRouter = require("./routers/assignment.router");
+const { MailService, Templates } = require("./services/mail.service");
 
 const config = Config.getInstance();
 
@@ -47,4 +48,5 @@ app.use((req, res) => {
 
 app.listen(config.port, () => {
   console.log(`Server running on port ${config.port}`);
+  const mailService = new MailService();
 });

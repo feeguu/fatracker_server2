@@ -4,10 +4,12 @@ const { withRole } = require("../middlewares/with-role");
 const { CourseController } = require("../controllers/course.controller");
 const { CourseService } = require("../services/course.service");
 const { StaffService } = require("../services/staff.service");
+const { MailService } = require("../services/mail.service");
 
 const router = require("express").Router();
 
-const staffService = new StaffService();
+const mailService = new MailService();
+const staffService = new StaffService(mailService);
 const courseService = new CourseService(staffService);
 const courseController = new CourseController(courseService);
 

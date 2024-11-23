@@ -7,10 +7,12 @@ const { SectionService } = require("../services/section.service");
 const { CourseService } = require("../services/course.service");
 const { SectionController } = require("../controllers/section.controller");
 const { StudentService } = require("../services/student.service");
+const { MailService } = require("../services/mail.service");
 
 const router = require("express").Router();
 
-const staffService = new StaffService();
+const mailService = new MailService();
+const staffService = new StaffService(mailService);
 const courseService = new CourseService(staffService);
 const studentService = new StudentService();
 const sectionService = new SectionService(

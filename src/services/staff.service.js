@@ -6,7 +6,16 @@ const { StaffRole } = require("../models/staff-role");
 const HttpError = require("../errors/HttpError");
 const bcrypt = require("bcrypt");
 const { getUserByEmail } = require("../utils/email");
+const { Templates } = require("./mail.service");
+const Config = require("../config/config");
 class StaffService {
+  /**
+   * @param {import("./mail.service").MailService} mailService
+   */
+  constructor(mailService) {
+    this.mailService = mailService;
+  }
+
   /**
    * @param {Object} param0
    * @param {Array<string> | undefined} param0.roles
@@ -78,13 +87,15 @@ class StaffService {
       throw new HttpError(409, "Email already in use");
     }
 
-    // TODO: isso era pra ser gerada automatica e mandada por email
-    // No momento pega o primeiro nome em minuscula e sem acento
-    const password = name
-      .split(" ")[0]
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    let randomString = "";
+    for (let i = 0; i < 12; i++) {
+      randomString += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    const password = randomString;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -119,6 +130,12 @@ class StaffService {
         validate: true,
       });
       await staff.reload({ transaction: t });
+      this.mailService.sendMail(email, "Nova conta", Templates.NEW_STAFF, {
+        name,
+        email,
+        password,
+        url: Config.getInstance().frontend.url,
+      });
       return staff;
     });
 

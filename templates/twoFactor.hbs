@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirme seu acesso</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: #e11d48;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .code {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #e11d48;
+        }
+
+        .footer {
+            background: #e11d48;
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .footer h1 {
+            color: #ffffff;
+            font-weight: 500;
+            font-size: 1.25rem;
+            line-height: 1.75rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Autenticação de dois fatores</h1>
+        </div>
+        <div class="content">
+            <p>Olá {{name}},</p>
+            <p>Seu código de autenticação de dois fatores é:</p>
+
+            <div class="code">{{code}}</div>
+
+            <p>Esse código irá expirar em 10 minutos.</p>
+
+            <a href="{{url}}">Você pode confirmar seu acesso também acessando esse link</a>
+
+            <p>Se você não solicitou esse código, ignore o e-mail e altere sua senha.</p>
+        </div>
+        <div class="footer">
+            <h1 class=""><span style="color: #ffe4e6">FA</span>Tracker</h1>
+        </div>
+    </div>
+</body>
+
+</html>
