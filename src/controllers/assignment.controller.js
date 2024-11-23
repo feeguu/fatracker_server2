@@ -30,8 +30,23 @@ class AssignmentController {
   }
 
   async getAssignments(req, res) {
+    const querySchema = joi.object({
+      sectionId: joi.number().integer(),
+      courseId: joi.number().integer(),
+      expired: joi.boolean(),
+    });
+
+    const { value, error } = querySchema.validate(req.query, {
+      abortEarly: false,
+      allowUnknown: true,
+    });
+
+    if (error) {
+      throw new HttpError(400, error.details.map((e) => e.message).join(", "));
+    }
+
     const user = res.locals.user;
-    const assignments = await this.assignmentService.findAll(user);
+    const assignments = await this.assignmentService.findAll(user, value);
     return res.json(assignments);
   }
 

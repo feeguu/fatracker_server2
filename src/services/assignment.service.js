@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const HttpError = require("../errors/HttpError");
 const { Assignment } = require("../models/assignment");
 const { Coordination } = require("../models/coordination");
@@ -5,6 +6,7 @@ const { Section } = require("../models/section");
 const { StaffRole } = require("../models/staff-role");
 const { StudentSection } = require("../models/student-section");
 const { Teaching } = require("../models/teaching");
+const { Course } = require("../models/course");
 
 class AssignmentService {
   /**
@@ -62,9 +64,37 @@ class AssignmentService {
     return assignment;
   }
 
-  async findAll(user) {
+  async findAll(user, { sectionId, courseId, expired }) {
+    const where = {};
+
+    if (sectionId) {
+      const permissions = this.sectionService.getUserPermissions(
+        user,
+        sectionId
+      );
+
+      if (!permissions.view) {
+        throw new HttpError(
+          403,
+          "You are not allowed to view assignments from this section"
+        );
+      }
+
+      where.sectionId = sectionId;
+    }
+
+    if (courseId) {
+      where["$section.courseId$"] = courseId;
+    }
+
+    if (expired !== undefined) {
+      const op = expired ? Op.lt : Op.gte;
+      where.dueDate = { [op]: new Date() };
+    }
+
     if (user.roles.includes("STUDENT")) {
       return await Assignment.findAll({
+        where,
         include: [
           {
             model: Section,
@@ -85,6 +115,7 @@ class AssignmentService {
 
     if (user.roles.includes("ADMIN")) {
       return await Assignment.findAll({
+        where,
         include: [{ model: Section, as: "section", include: ["course"] }],
       });
     }
@@ -95,6 +126,7 @@ class AssignmentService {
       const coordinations = await Coordination.findAll({
         where: {
           coordinatorId: user.id,
+          ...where,
         },
         include: [
           {
@@ -140,6 +172,7 @@ class AssignmentService {
     }
 
     return await Assignment.findAll({
+      where,
       include: [
         {
           model: Section,
