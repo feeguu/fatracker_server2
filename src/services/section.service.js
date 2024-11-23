@@ -20,16 +20,19 @@ class SectionService {
     this.staffService = staffService;
   }
 
-  async findAll({
-    offset,
-    limit,
-    courseCode,
-    isActive,
-    period,
-    yearSemester,
-    semester,
-    year,
-  }) {
+  async findAll(
+    user,
+    {
+      offset,
+      limit,
+      courseCode,
+      isActive,
+      period,
+      yearSemester,
+      semester,
+      year,
+    }
+  ) {
     const where = {};
 
     if (courseCode) {
@@ -59,11 +62,44 @@ class SectionService {
       where.year = year;
     }
 
-    return await Section.findAll({
-      where,
-      offset,
-      limit,
-    });
+    if (user.roles.includes("ADMIN")) {
+      return await Section.findAll({
+        where,
+        offset,
+        limit,
+      });
+    }
+
+    if (user.roles.includes("COORDINATOR")) {
+      return await Section.findAll({
+        where: {
+          ...where,
+          "$course.coordination.staffRole.staffId$": user.id,
+        },
+        include: [
+          {
+            model: Course,
+            as: "course",
+            include: [
+              {
+                model: Coordination,
+                as: "coordination",
+                required: true,
+                include: [
+                  {
+                    model: StaffRole,
+                    as: "staffRole",
+                    required: true,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        offset,
+        limit,
+      });
+    }
   }
 
   async create(user, { courseId, period, year, yearSemester, semester }) {
@@ -86,16 +122,51 @@ class SectionService {
     });
   }
 
-  async getById(id) {
+  async getById(user, id) {
     const section = await Section.findByPk(id);
+
     if (!section) {
       throw new HttpError(404, "Section not found");
     }
+
+    const permissions = await this.getUserPermissions(user, section.id);
+
+    if (!permissions.view) {
+      throw new HttpError(
+        403,
+        "You do not have permission to view this section"
+      );
+    }
+
     return section;
   }
 
-  async update(id, { period, year, yearSemester, semester }) {
-    const section = await this.getById(id);
+  async update(user, id, { period, year, yearSemester, semester }) {
+    const section = await this.getById(user, id);
+
+    const permissions = await this.getUserPermissions(user, section.id);
+
+    if (!permissions.edit) {
+      throw new HttpError(
+        403,
+        "You do not have permission to edit this section"
+      );
+    }
+
+    const conflict = await Section.findOne({
+      where: {
+        courseId: section.courseId,
+        year,
+        semester,
+        yearSemester,
+        period,
+        id: { [Op.ne]: section.id },
+      },
+    });
+
+    if (conflict) {
+      throw new HttpError(409, "This section already exists");
+    }
 
     if (period) section.period = period;
     if (year) section.year = year;
@@ -105,12 +176,22 @@ class SectionService {
     return await section.save();
   }
 
-  async delete(id) {
+  async delete(user, id) {
     const section = await this.getById(id);
+
+    const permissions = await this.getUserPermissions(user, section.id);
+
+    if (!permissions.edit) {
+      throw new HttpError(
+        403,
+        "You do not have permission to delete this section"
+      );
+    }
+
     await section.destroy();
   }
 
-  async assignProfessor(sectionId, staffId) {
+  async assignProfessor(user, sectionId, staffId) {
     const section = await this.getById(sectionId);
     let staff = await this.staffService.findById(staffId);
 
@@ -118,7 +199,16 @@ class SectionService {
       throw new HttpError(404, "Staff not found");
     }
 
-    const role = Role.findOne({ where: { name: "PROFESSOR" } });
+    const permissions = await this.getUserPermissions(user, section.id);
+
+    if (!permissions.edit) {
+      throw new HttpError(
+        403,
+        "You do not have permission to assign a professor to this section"
+      );
+    }
+
+    const role = await Role.findOne({ where: { name: "PROFESSOR" } });
 
     if (!staff.roles.includes("PROFESSOR")) {
       staff = await this.staffService.addRole(staff.id, "PROFESSOR");
@@ -144,7 +234,14 @@ class SectionService {
     return section;
   }
 
-  async unassignProfessor(sectionId) {
+  async unassignProfessor(user, sectionId) {
+    const permissions = await this.getUserPermissions(user, sectionId);
+    if (!permissions.edit) {
+      throw new HttpError(
+        403,
+        "You do not have permission to unassign a professor from this section"
+      );
+    }
     const section = await this.getById(sectionId);
     const teaching = await section.getTeaching();
 
@@ -158,6 +255,12 @@ class SectionService {
     await teaching.destroy();
   }
 
+  /**
+   *
+   * @param {*} user
+   * @param {number} sectionId
+   * @returns {Promise<{view: boolean, edit: boolean}>}
+   */
   async getUserPermissions(user, sectionId) {
     const section = await this.getById(sectionId);
 

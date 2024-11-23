@@ -24,6 +24,13 @@ router.get(
   )
 );
 
+router.get(
+  "/:id",
+  withAuth(),
+  withRole(["STAFF", "STUDENT"]),
+  ...withErrorHandler(sectionController.getSection.bind(sectionController))
+);
+
 router.post(
   "/",
   ...withErrorHandler(

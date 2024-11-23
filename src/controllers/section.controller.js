@@ -47,10 +47,17 @@ class SectionController {
         error.details.map((detail) => detail.message).join(", ")
       );
     }
+    const user = res.locals.user;
 
-    const sections = await this.sectionService.findAll(value);
+    const sections = await this.sectionService.findAll(user, value);
 
     return res.status(200).json(sections);
+  }
+
+  async getSection(req, res) {
+    const user = res.locals.user;
+    const section = await this.sectionService.getById(user, req.params.id);
+    return res.status(200).json(section);
   }
 
   async createSection(req, res) {
@@ -112,13 +119,19 @@ class SectionController {
       );
     }
 
-    const section = await this.sectionService.update(req.params.id, value);
+    const user = res.locals.user;
+    const section = await this.sectionService.update(
+      user,
+      req.params.id,
+      value
+    );
 
     return res.status(200).json(section);
   }
 
   async deleteSection(req, res) {
-    await this.sectionService.delete(req.params.id);
+    const user = res.locals.user;
+    await this.sectionService.delete(user, req.params.id);
 
     return res.status(204).end();
   }
@@ -139,8 +152,9 @@ class SectionController {
         error.details.map((detail) => detail.message).join(", ")
       );
     }
-
+    const user = res.locals.user;
     const newSection = await this.sectionService.assignProfessor(
+      user,
       req.params.id,
       value.staffId
     );
@@ -149,7 +163,9 @@ class SectionController {
   }
 
   async unassignProfessor(req, res) {
+    const user = res.locals.user;
     const newSection = await this.sectionService.unassignProfessor(
+      user,
       req.params.id
     );
 
