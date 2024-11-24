@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 const { Student } = require("../models/student");
 
 const studentsData = [
@@ -55,9 +56,13 @@ const studentsData = [
 
 async function seedStudents() {
   for (const studentData of studentsData) {
+    const hashedPassword = await bcrypt.hash(studentData.password, 10);
     const [data, created] = await Student.findOrCreate({
       where: { ra: studentData.ra },
-      defaults: studentData,
+      defaults: {
+        password: hashedPassword,
+        name: studentData.name,
+      },
     });
 
     if (created)
