@@ -208,7 +208,7 @@ class SectionService {
   }
 
   async assignProfessor(user, sectionId, staffId) {
-    const section = await this.getById(sectionId);
+    const section = await this.getById(user, sectionId);
     let staff = await this.staffService.findById(staffId);
 
     if (!staff) {
